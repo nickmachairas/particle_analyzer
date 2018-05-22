@@ -1,7 +1,9 @@
 import xml.etree.ElementTree as ETree
 from tqdm import tqdm
+import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 class ParticleData(object):
     """Class to represent a particle data set
@@ -71,9 +73,59 @@ class ParticleData(object):
                     df = df.append(data, ignore_index=True)
                     pbar.update(1)
 
-        # Fix data types in df
+        # Fix data types in df (all numerical except for 'pixel' string)
         for column in df.columns:
             if column != "pixel":
                 df[column] = pd.to_numeric(df[column], errors='coerce')
 
         return date, product, test_filter, particle_num, df
+
+    def show_image(self, index):
+        """Decodes pixel string and plots a particle image
+
+        """
+
+        # Initial parameters
+        width = self.df.width[index]
+        height = self.df.height[index]
+        pixel_string = self.df.pixel[index]
+
+        # Run decoder
+        hex_table = []
+        hex_row = []
+        hex_str = ''
+        pixel_table = []
+        pixel_row = []
+
+        for i in pixel_string:
+            hex_str = hex_str + i
+            if len(hex_str) == 4:
+                hex_row.append(hex_str)
+                hex_num = int(hex_str[:2], 16) + int(hex_str[2:], 16)
+                pixel_row.append(hex_num)
+                hex_str = ''
+            if len(hex_row) == 3:
+                hex_table.append(hex_row)
+                pixel_table.append(pixel_row)
+                hex_row = []
+                pixel_row = []
+
+        hex_table = np.array(hex_table)
+        pixel_table = np.array(pixel_table)
+
+        X = pixel_table[:, 0]
+        Y = pixel_table[:, 1]
+        Z = pixel_table[:, 2]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, aspect='equal')
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        for x, y, z in zip(X, Y, Z):
+            ax.add_patch(patches.Rectangle((x, y), z, 1, facecolor="black"))
+        ax.xaxis.set_visible(False)
+        ax.yaxis.set_visible(False)
+        ax.axis('off')
+        # fig.savefig('pict.png', bbox_inches='tight', pad_inches=0)
+        fig.show()
+
