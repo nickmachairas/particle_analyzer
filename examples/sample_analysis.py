@@ -8,7 +8,9 @@ if __name__ == "__main__":
     print(test1.df.head())
     print(test1.df.info())
     print(test1.df.describe())
-    test2 = ParticleData('ottawa sand 2030.xml')
-    print(test2.df.head())
-    print(test2.df.info())
-    print(test2.df.describe())
+    # test2 = ParticleData('ottawa sand 2030.xml')
+    # print(test2.df.head())
+    # print(test2.df.info())
+    # print(test2.df.describe())
+
+    test1.show_image(0)
