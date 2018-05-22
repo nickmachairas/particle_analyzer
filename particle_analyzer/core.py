@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ETree
+from tqdm import tqdm
+import pandas as pd
 
 
 class ParticleData(object):
@@ -17,7 +19,7 @@ class ParticleData(object):
 
     def __init__(self, file_path):
         self.file_path = file_path
-        self.date, self.product, self.filter, self.particle_num = \
+        self.date, self.product, self.filter, self.particle_num, self.df = \
             self.parse_file()
 
     def parse_file(self):
@@ -53,5 +55,25 @@ class ParticleData(object):
         print("Filter:", test_filter)
         print("Detected data for {} particles within {}".format(particle_num,
                                                                 self.file_path))
+        print("------------------")
+        print("Loading particle data in a data frame...")
 
-        return date, product, test_filter, particle_num
+        # Instantiate DataFrame
+        df = pd.DataFrame()
+
+        # Loop and load rows
+        with tqdm(total=particle_num) as pbar:
+            for child in root:
+                if child.tag == "particle":
+                    data = child.attrib
+                    image = child[0].attrib
+                    data.update(image)
+                    df = df.append(data, ignore_index=True)
+                    pbar.update(1)
+
+        # Fix data types in df
+        for column in df.columns:
+            if column != "pixel":
+                df[column] = pd.to_numeric(df[column], errors='coerce')
+
+        return date, product, test_filter, particle_num, df
