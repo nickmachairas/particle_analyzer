@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
+
 class ParticleData(object):
     """Class to represent a particle data set
 
@@ -42,7 +43,7 @@ class ParticleData(object):
             A Pandas data frame with all values from the XML input file
         """
 
-        print("Parsing input file...")
+        print("Parsing input file...\n")
         tree = ETree.parse(self.file_path)
         root = tree.getroot()
         date = root[0].attrib['measurement']
@@ -50,13 +51,14 @@ class ParticleData(object):
         test_filter = root[0].attrib['filter']
         particle_num = len(root) - 1
 
+        print("===========")
         print("File Header")
-        print("-----------")
+        print("===========")
         print("Date:", date)
         print("Product:", product)
         print("Filter:", test_filter)
-        print("Detected data for {} particles within {}".format(particle_num,
-                                                                self.file_path))
+        print("Detected data for {} particles within '{}'"
+              "".format(particle_num, self.file_path))
         print("------------------")
         print("Loading particle data in a data frame...")
 
@@ -86,12 +88,11 @@ class ParticleData(object):
         """
 
         # Initial parameters
-        width = self.df.width[index]
-        height = self.df.height[index]
-        pixel_string = self.df.pixel[index]
+        width = self.df.width[self.df.frame == index].values[0]
+        height = self.df.height[self.df.frame == index].values[0]
+        pixel_string = self.df.pixel[self.df.frame == index].values[0]
 
         # Run decoder
-        hex_table = []
         hex_row = []
         hex_str = ''
         pixel_table = []
@@ -100,24 +101,24 @@ class ParticleData(object):
         for i in pixel_string:
             hex_str = hex_str + i
             if len(hex_str) == 4:
+                hex_str = hex_str[2:] + hex_str[:2]  # flip hex
                 hex_row.append(hex_str)
-                hex_num = int(hex_str[:2], 16) + int(hex_str[2:], 16)
+                hex_num = int(hex_str, 16)
                 pixel_row.append(hex_num)
                 hex_str = ''
             if len(hex_row) == 3:
-                hex_table.append(hex_row)
                 pixel_table.append(pixel_row)
                 hex_row = []
                 pixel_row = []
 
-        hex_table = np.array(hex_table)
         pixel_table = np.array(pixel_table)
 
         X = pixel_table[:, 0]
         Y = pixel_table[:, 1]
         Z = pixel_table[:, 2]
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=(3, 3))
+        plt.subplots_adjust(0.02, 0.02, 0.98, 0.98)  # removes margins from savefig
         ax = fig.add_subplot(111, aspect='equal')
         ax.set_xlim(0, width)
         ax.set_ylim(0, height)
@@ -126,6 +127,5 @@ class ParticleData(object):
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         ax.axis('off')
-        # fig.savefig('pict.png', bbox_inches='tight', pad_inches=0)
+        # fig.savefig('pict.png', cmap='Greys')
         fig.show()
-
