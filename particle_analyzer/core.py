@@ -82,7 +82,7 @@ class ParticleData(object):
 
         return date, product, test_filter, particle_num, df
 
-    def show_image(self, index):
+    def show_image(self, index, show=True, path=''):
         """Decodes pixel string and plots a particle image
 
         """
@@ -127,5 +127,10 @@ class ParticleData(object):
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         ax.axis('off')
-        # fig.savefig('pict.png', cmap='Greys')
-        fig.show()
+
+        if show:
+            fig.show()
+        else:
+            fig.savefig('{}.png'.format(path), cmap='Greys')
+            plt.clf()
+            plt.close()
