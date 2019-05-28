@@ -82,15 +82,20 @@ class ParticleData(object):
 
         return date, product, test_filter, particle_num, df
 
-    def show_image(self, index, show=True, path=''):
+    def show_image(self, number, lookup_by='frame', show=True, filename=''):
         """Decodes pixel string and plots a particle image
 
         """
 
         # Initial parameters
-        width = self.df.width[self.df.frame == index].values[0]
-        height = self.df.height[self.df.frame == index].values[0]
-        pixel_string = self.df.pixel[self.df.frame == index].values[0]
+        if lookup_by == 'frame':
+            width = self.df.width[self.df.frame == number].values[0]
+            height = self.df.height[self.df.frame == number].values[0]
+            pixel_string = self.df.pixel[self.df.frame == number].values[0]
+        else:
+            width = self.df.width[number]
+            height = self.df.height[number]
+            pixel_string = self.df.pixel[number]
 
         # Run decoder
         hex_row = []
@@ -117,7 +122,7 @@ class ParticleData(object):
         Y = pixel_table[:, 1]
         Z = pixel_table[:, 2]
 
-        fig = plt.figure(figsize=(3, 3))
+        fig = plt.figure(figsize=(5.12, 5.12))
         plt.subplots_adjust(0.02, 0.02, 0.98, 0.98)  # removes margins from savefig
         ax = fig.add_subplot(111, aspect='equal')
         ax.set_xlim(0, width)
@@ -131,6 +136,6 @@ class ParticleData(object):
         if show:
             fig.show()
         else:
-            fig.savefig('{}.png'.format(path), cmap='Greys')
+            fig.savefig('{}.png'.format(filename), cmap='Greys')
             plt.clf()
             plt.close()
