@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/nickmachairas/particle_analyzer",
     packages=setuptools.find_packages(),
     install_requires=[
-        'numpy==1.14.3',
+        'numpy==1.22.0',
         'pandas==0.23.0',
         'matplotlib==2.2.2',
         'tqdm==4.23.3',
